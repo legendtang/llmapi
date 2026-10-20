@@ -42,8 +42,9 @@ automatic binary downgrade is not always safe; the snapshot supports recovery.
 ## Credentials and public files
 
 `FLY_API_TOKEN` is a GitHub Actions repository Secret containing a deployment
-token scoped to the `llmapi` app. The initial token expires after one year;
-renew the Secret before expiration.
+token scoped to the `llmapi` app. It was created with `--expiry 0` at the owner's
+request. Fly reports its expiration as **2126-09-26**, approximately 100 years,
+rather than literal infinity. The original one-year token was revoked.
 
 The actual `CPA_MANAGEMENT_KEY` and `CPA_MANAGER_ADMIN_KEY` remain in Fly app
 Secrets. This repository contains their names only. Authentication files,
