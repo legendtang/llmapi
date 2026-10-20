@@ -1,0 +1,57 @@
+name: Update and deploy llmapi
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - fly.toml
+      - machine-config.json
+      - scripts/**
+      - .github/workflows/fly-deploy.yml
+  schedule:
+    # 04:19 Asia/Shanghai, outside peak UTC scheduling hours.
+    - cron: '19 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: llmapi-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.repository == 'legendtang/llmapi'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      FLY_APP: llmapi
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1
+        with:
+          version: '0.4.118'
+      - name: Check both upstream images and the existing Machine
+        id: plan
+        run: python3 scripts/update.py prepare
+      - name: Validate Fly configuration
+        if: steps.plan.outputs.deploy == 'true'
+        run: flyctl config validate --config fly.toml
+      - name: Snapshot the existing data volume
+        if: steps.plan.outputs.deploy == 'true'
+        run: python3 scripts/update.py snapshot
+      - name: Deploy existing Machine using Fly Launch
+        if: steps.plan.outputs.deploy == 'true'
+        run: >-
+          flyctl deploy --config fly.toml
+          --image '${{ steps.plan.outputs.image }}'
+          --ha=false --strategy immediate --update-only
+          --only-machines '${{ steps.plan.outputs.machine }}'
+          --wait-timeout 300s --yes
+      - name: Verify both containers, health checks and persistent data
+        if: steps.plan.outputs.deploy == 'true'
+        run: python3 scripts/update.py verify

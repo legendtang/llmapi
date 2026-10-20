@@ -1,0 +1,70 @@
+app = "llmapi"
+primary_region = "nrt"
+machine_config = "machine-config.json"
+container = "cpa"
+swap_size_mb = 512
+kill_signal = "SIGTERM"
+kill_timeout = "30s"
+
+[build]
+  image = "eceasy/cli-proxy-api:latest"
+
+[deploy]
+  strategy = "immediate"
+
+[[mounts]]
+  source = "cpa_data"
+  destination = "/home"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8317
+  auto_stop_machines = "off"
+  auto_start_machines = true
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+    [services.ports.http_options]
+      idle_timeout = 600
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+    [services.ports.http_options]
+      idle_timeout = 600
+
+  [[services.tcp_checks]]
+    grace_period = "60s"
+    interval = "30s"
+    timeout = "5s"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 18317
+  auto_stop_machines = "off"
+  auto_start_machines = true
+
+  [[services.ports]]
+    port = 8443
+    handlers = ["tls", "http"]
+
+    [services.ports.http_options]
+      idle_timeout = 600
+
+  [[services.tcp_checks]]
+    grace_period = "60s"
+    interval = "30s"
+    timeout = "5s"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "256mb"
+
+[[restart]]
+  policy = "on-failure"
+  retries = 10

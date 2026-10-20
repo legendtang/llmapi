@@ -1,0 +1,9 @@
+.deploy/
+__pycache__/
+*.pyc
+.env
+.env.*
+*.sqlite*
+*.key
+auths/
+config.yaml
