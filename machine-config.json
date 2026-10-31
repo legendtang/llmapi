@@ -4,19 +4,23 @@
       "name": "cpa",
       "image": "eceasy/cli-proxy-api:latest",
       "entrypoint": ["/CLIProxyAPI/CLIProxyAPI"],
-      "cmd": ["-config", "/home/cpa/config.yaml"]
+      "cmd": ["-config", "/home/cpa/config.yaml"],
+      "secrets": [
+        {"env_var": "MANAGEMENT_PASSWORD", "name": "CPA_MANAGEMENT_KEY"}
+      ]
     },
     {
       "name": "cpamp",
       "image": "seakee/cpa-manager-plus:latest",
       "entrypoint": ["/bin/sh", "-c"],
-      "cmd": ["export USAGE_DATA_DIR=/home/cpamp/data USAGE_DB_PATH=/home/cpamp/data/usage.sqlite CPA_MANAGER_DATA_KEY_PATH=/home/cpamp/data/data.key CPA_UPSTREAM_URL=http://127.0.0.1:8317; exec /usr/local/bin/cpa-manager-plus"],
+      "cmd": ["export USAGE_DATA_DIR=/home/cpamp/data USAGE_DB_PATH=/home/cpamp/data/usage.sqlite CPA_MANAGER_DATA_KEY_PATH=/home/cpamp/data/data.key CPA_UPSTREAM_URL=http://127.0.0.1:8317 USAGE_POLL_INTERVAL_MS=2000; exec /usr/local/bin/cpa-manager-plus"],
       "env": {
         "CPA_MANAGER_DATA_KEY_PATH": "/home/cpamp/data/data.key",
         "CPA_UPSTREAM_URL": "http://127.0.0.1:8317",
         "GODEBUG": "http2client=0",
         "USAGE_DATA_DIR": "/home/cpamp/data",
-        "USAGE_DB_PATH": "/home/cpamp/data/usage.sqlite"
+        "USAGE_DB_PATH": "/home/cpamp/data/usage.sqlite",
+        "USAGE_POLL_INTERVAL_MS": "2000"
       },
       "secrets": [
         {"env_var": "CPA_MANAGEMENT_KEY", "name": "CPA_MANAGEMENT_KEY"},

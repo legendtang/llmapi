@@ -113,6 +113,7 @@ def prepare():
     ROOT.mkdir(exist_ok=True)
     (ROOT / 'before.json').write_text(json.dumps(live))
     (ROOT / 'expected.json').write_text(json.dumps(expected_digests))
+    (ROOT / 'declared.json').write_text(json.dumps(declared))
     # Pin both resolved versions for this deployment; no runtime files enter Git.
     Path('machine-config.json').write_text(json.dumps(declared, indent=2) + '\n')
     summary('Updating the existing Tokyo Machine in place; retaining its volume and app Secrets.')
@@ -146,6 +147,7 @@ def probe(url, expected):
 def verify():
     before = json.loads((ROOT / 'before.json').read_text())
     expected = json.loads((ROOT / 'expected.json').read_text())
+    declared = json.loads((ROOT / 'declared.json').read_text())
     deadline = time.monotonic() + 180
     while True:
         live = api('machines/' + before['id'])
@@ -161,7 +163,7 @@ def verify():
     for key in ['mounts', 'guest', 'init', 'services', 'stop_config', 'restart']:
         require(live['config'].get(key) == before['config'].get(key), key + ' changed unexpectedly')
     for container in live['config']['containers']:
-        original = next(c for c in before['config']['containers'] if c['name'] == container['name'])
+        original = next(c for c in declared['containers'] if c['name'] == container['name'])
         runtime = next(c for c in live['containers'] if c['name'] == container['name'])
         require(runtime['image_ref']['digest'] in expected[container['name']], 'Image digest mismatch')
         a, b = copy.deepcopy(original), copy.deepcopy(container)

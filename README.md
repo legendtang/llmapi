@@ -35,6 +35,12 @@ automatic binary downgrade is not always safe; the snapshot supports recovery.
 - Autostop disabled, autostart enabled, HTTP idle timeout 600 seconds.
 - SIGTERM with 30 seconds to stop; TCP checks for both services.
 - CPA reads `/home/cpa/config.yaml` directly.
+- CPA uses the existing management Secret as `MANAGEMENT_PASSWORD`, its native
+  constant-time authentication path. This avoids repeating bcrypt work on every
+  management polling request; the key and authentication remain unchanged.
+- cpamp polls every 2 seconds (`USAGE_POLL_INTERVAL_MS=2000`) instead of the
+  default 500ms, with the original batch size of 100. Only reporting freshness
+  is affected; API requests do not pass through the collector.
 - cpamp's database and encryption key stay under `/home/cpamp/data`.
 - cpamp's validated environment export is retained to avoid image-default path
   overrides; the remaining settings are native Fly declarations.
