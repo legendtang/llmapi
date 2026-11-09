@@ -47,6 +47,9 @@ automatic binary downgrade is not always safe; the snapshot supports recovery.
   default 500ms, with the original batch size of 100. Only reporting freshness
   is affected; API requests do not pass through the collector.
 - cpamp's database and encryption key stay under `/home/cpamp/data`.
+- cpamp diagnostics listen only on `127.0.0.1:18316`
+  (`CPA_MANAGER_PPROF_ADDR`). No public service port exposes this listener.
+  Keep it available for capturing intermittent stalls without another restart.
 - cpamp's validated environment export is retained to avoid image-default path
   overrides; the remaining settings are native Fly declarations.
 
