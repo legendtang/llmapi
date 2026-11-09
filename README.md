@@ -35,6 +35,11 @@ automatic binary downgrade is not always safe; the snapshot supports recovery.
 - Autostop disabled, autostart enabled, HTTP idle timeout 600 seconds.
 - SIGTERM with 30 seconds to stop; TCP checks for both services.
 - CPA reads `/home/cpa/config.yaml` directly.
+- CPA currently runs a memory-budget experiment: `GOMEMLIMIT=128MiB`, `GOGC=50`.
+  These are Go runtime settings, not a process-wide hard memory cap. Early real
+  traffic showed lower heap/swap usage but still substantial I/O stalls on large
+  requests; this is not a claim of long-term stability. Native plugin allocation
+  is outside the Go budget. The image and Machine size were not changed.
 - CPA uses the existing management Secret as `MANAGEMENT_PASSWORD`, its native
   constant-time authentication path. This avoids repeating bcrypt work on every
   management polling request; the key and authentication remain unchanged.
